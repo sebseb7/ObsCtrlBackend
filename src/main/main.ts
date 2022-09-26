@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, Menu, Tray } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { resolveHtmlPath } from './util';
@@ -118,14 +118,45 @@ app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed
   if (process.platform !== 'darwin') {
-    app.quit();
+    // app.quit();
   }
 });
+
+let tray = null;
 
 app
   .whenReady()
   .then(() => {
-    createWindow();
+    const RESOURCES_PATH = app.isPackaged
+      ? path.join(process.resourcesPath, 'assets')
+      : path.join(__dirname, '../../assets');
+
+    const getAssetPath = (...paths: string[]): string => {
+      return path.join(RESOURCES_PATH, ...paths);
+    };
+
+    tray = new Tray(getAssetPath('icon.png'));
+
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Exit',
+        click: async () => {
+          app.quit();
+        },
+      },
+    ]);
+
+    // tray.setToolTip('This is my application.')
+    tray.setContextMenu(contextMenu);
+
+    tray.on('click', () => {
+      if (mainWindow === null) {
+        createWindow();
+      } else {
+        mainWindow.close();
+      }
+    });
+    // createWindow();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
