@@ -14,6 +14,8 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { resolveHtmlPath } from './util';
 
+const myapp = require('./app');
+
 class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
@@ -127,6 +129,8 @@ let tray = null;
 app
   .whenReady()
   .then(() => {
+    myapp.init(ipcMain);
+
     const RESOURCES_PATH = app.isPackaged
       ? path.join(process.resourcesPath, 'assets')
       : path.join(__dirname, '../../assets');
