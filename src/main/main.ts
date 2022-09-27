@@ -129,10 +129,14 @@ app.on('window-all-closed', () => {
 
 let tray = null;
 
+function getMainWindow() {
+  return mainWindow;
+}
+
 app
   .whenReady()
   .then(() => {
-    myapp.init(ipcMain);
+    myapp.init(ipcMain, getMainWindow);
 
     const RESOURCES_PATH = app.isPackaged
       ? path.join(process.resourcesPath, 'assets')
